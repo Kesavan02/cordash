@@ -30,6 +30,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="anti_plagiarism_salt"
+            android:value="53e4cf58eb6634c6149e062b2110da8712b6f9d1403a1d7b735589004348d5c7" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

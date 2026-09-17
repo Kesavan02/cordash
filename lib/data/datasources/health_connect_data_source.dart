@@ -26,6 +26,7 @@ class HealthConnectDataSource {
 
   Stream<StepRecordEntity> get stepsStream => _stepStreamController.stream;
   Stream<HeartRateRecordEntity> get heartRateStream => _hrStreamController.stream;
+  int get simulatedStepTotal => _simStepAccumulator;
 
   HealthConnectDataSource() {
     _initHealth();
@@ -72,6 +73,11 @@ class HealthConnectDataSource {
       final bool? stepsGranted = await _health.hasPermissions([HealthDataType.STEPS]);
       final bool? hrGranted = await _health.hasPermissions([HealthDataType.HEART_RATE]);
 
+      final allGranted = (stepsGranted ?? false) && (hrGranted ?? false);
+      if (allGranted && _pollingTimer == null && !_isSimulating) {
+        startPolling();
+      }
+
       return PermissionStatusEntity(
         stepsGranted: stepsGranted ?? false,
         heartRateGranted: hrGranted ?? false,
@@ -117,6 +123,26 @@ class HealthConnectDataSource {
 
   /// Fetches cumulative or sampled steps from today (midnight to now).
   Future<List<StepRecordEntity>> fetchTodaySteps() async {
+    if (_isSimulating) {
+      final now = DateTime.now();
+      final records = <StepRecordEntity>[];
+      int accumulated = 0;
+      for (int i = 12; i >= 1; i--) {
+        final stepCount = 220 + _random.nextInt(140);
+        accumulated += stepCount;
+        records.add(
+          StepRecordEntity(
+            id: 'sim_hist_step_${now.millisecondsSinceEpoch}_$i',
+            count: stepCount,
+            startTime: now.subtract(Duration(minutes: i * 5)),
+            endTime: now.subtract(Duration(minutes: (i - 1) * 5)),
+          ),
+        );
+      }
+      _simStepAccumulator = accumulated;
+      return records;
+    }
+
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
 
@@ -143,6 +169,23 @@ class HealthConnectDataSource {
           ),
         );
       }
+
+      if (records.isEmpty) {
+        try {
+          final totalSteps = await _health.getTotalStepsInInterval(startOfDay, now);
+          if (totalSteps != null && totalSteps > 0) {
+            records.add(
+              StepRecordEntity(
+                id: 'hc_aggregate_${now.millisecondsSinceEpoch}',
+                count: totalSteps,
+                startTime: startOfDay,
+                endTime: now,
+              ),
+            );
+          }
+        } catch (_) {}
+      }
+
       return records;
     } catch (_) {
       return [];
@@ -153,6 +196,23 @@ class HealthConnectDataSource {
   Future<List<HeartRateRecordEntity>> fetchRecentHeartRates({
     Duration duration = const Duration(hours: 1),
   }) async {
+    if (_isSimulating) {
+      final now = DateTime.now();
+      final records = <HeartRateRecordEntity>[];
+      for (int i = 50; i >= 0; i--) {
+        final time = now.subtract(Duration(seconds: i * 20));
+        final bpm = 70 + _random.nextInt(16) + (i % 6);
+        records.add(
+          HeartRateRecordEntity(
+            id: 'sim_hist_hr_${now.millisecondsSinceEpoch}_$i',
+            bpm: bpm,
+            timestamp: time,
+          ),
+        );
+      }
+      return records;
+    }
+
     final now = DateTime.now();
     final startTime = now.subtract(duration);
 
@@ -188,13 +248,17 @@ class HealthConnectDataSource {
   void startPolling({Duration interval = const Duration(seconds: 10)}) {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(interval, (_) async {
-      final recentHr = await fetchRecentHeartRates(duration: const Duration(minutes: 2));
-      if (recentHr.isNotEmpty && !_hrStreamController.isClosed) {
-        _hrStreamController.add(recentHr.last);
-      }
-      final todaySteps = await fetchTodaySteps();
-      if (todaySteps.isNotEmpty && !_stepStreamController.isClosed) {
-        _stepStreamController.add(todaySteps.last);
+      try {
+        final recentHr = await fetchRecentHeartRates(duration: const Duration(minutes: 2));
+        if (recentHr.isNotEmpty && !_hrStreamController.isClosed) {
+          _hrStreamController.add(recentHr.last);
+        }
+        final todaySteps = await fetchTodaySteps();
+        if (todaySteps.isNotEmpty && !_stepStreamController.isClosed) {
+          _stepStreamController.add(todaySteps.last);
+        }
+      } catch (_) {
+        // Silently catch background foreground-caller exceptions
       }
     });
   }
@@ -213,7 +277,7 @@ class HealthConnectDataSource {
         _simStepAccumulator += stepIncrement;
         final simStep = StepRecordEntity(
           id: 'sim_step_${now.millisecondsSinceEpoch}',
-          count: _simStepAccumulator,
+          count: stepIncrement,
           startTime: now.subtract(const Duration(seconds: 5)),
           endTime: now,
         );

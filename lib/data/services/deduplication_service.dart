@@ -48,10 +48,13 @@ class DeduplicationService {
     List<T> records,
     String Function(T item) idSelector,
   ) {
+    final seen = <String>{};
     final result = <T>[];
     for (final item in records) {
       final id = idSelector(item);
-      if (!isDuplicate(id)) {
+      if (id.isEmpty) {
+        result.add(item);
+      } else if (seen.add(id)) {
         result.add(item);
       }
     }

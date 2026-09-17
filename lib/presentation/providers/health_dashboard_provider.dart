@@ -40,6 +40,47 @@ class HealthDashboardProvider extends ChangeNotifier {
   int get todayTotalSteps => _todayTotalSteps;
   String get heartRateAge => _heartRateAge;
   bool get isLoading => _isLoading;
+
+  /// Returns 7 daily step records (past 6 days + today) for the weekly activity chart.
+  /// Today's bar is dynamically bound to [todayTotalSteps], and past days reflect
+  /// recorded historical steps or baseline activity.
+  List<StepRecordEntity> get weeklySteps {
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
+
+    // Group existing step records by calendar day
+    final Map<int, int> dayStepsMap = {};
+    for (final s in _steps) {
+      final sDate = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+      final daysAgo = todayMidnight.difference(sDate).inDays;
+      if (daysAgo >= 0 && daysAgo < 7) {
+        dayStepsMap[daysAgo] = (dayStepsMap[daysAgo] ?? 0) + s.count;
+      }
+    }
+
+    final result = <StepRecordEntity>[];
+    for (int i = 6; i >= 0; i--) {
+      final dayDate = todayMidnight.subtract(Duration(days: i));
+      int count;
+      if (i == 0) {
+        // Today is always the live todayTotalSteps
+        count = _todayTotalSteps;
+      } else {
+        // Past days: strictly use recorded steps; if none, it's 0 (empty)
+        count = dayStepsMap[i] ?? 0;
+      }
+
+      result.add(
+        StepRecordEntity(
+          id: 'weekly_day_$i',
+          count: count,
+          startTime: dayDate,
+          endTime: i == 0 ? now : dayDate.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
+        ),
+      );
+    }
+    return List.unmodifiable(result);
+  }
   bool get isSimulating {
     final repo = repository;
     if (repo is HealthRepositoryImpl) {
@@ -72,14 +113,31 @@ class HealthDashboardProvider extends ChangeNotifier {
         duration: const Duration(hours: 1),
       );
 
-      _steps.clear();
-      _steps.addAll(initialSteps);
-      _recalculateTotalSteps();
+      if (isSimulating) {
+        _steps.clear();
+        _steps.addAll(initialSteps);
+        _recalculateTotalSteps();
 
-      _heartRates.clear();
-      _heartRates.addAll(initialHr);
-      if (_heartRates.isNotEmpty) {
-        _latestHeartRate = _heartRates.last;
+        _heartRates.clear();
+        _heartRates.addAll(initialHr);
+        _latestHeartRate = _heartRates.isNotEmpty ? _heartRates.last : null;
+      } else {
+        // In real mode, purge any synthetic simulated records
+        _steps.removeWhere((s) => s.id.startsWith('sim_'));
+        if (initialSteps.isNotEmpty) {
+          _steps.clear();
+          _steps.addAll(initialSteps);
+        }
+        _recalculateTotalSteps();
+
+        _heartRates.removeWhere((hr) => hr.id.startsWith('sim_'));
+        if (initialHr.isNotEmpty) {
+          _heartRates.clear();
+          _heartRates.addAll(initialHr);
+          _latestHeartRate = _heartRates.last;
+        } else if (_heartRates.isEmpty) {
+          _latestHeartRate = null;
+        }
       }
     } finally {
       _isLoading = false;
@@ -106,12 +164,26 @@ class HealthDashboardProvider extends ChangeNotifier {
       _todayTotalSteps = 0;
       return;
     }
-    // If records are cumulative intervals, sum count; if absolute, take maximum
-    int total = 0;
-    for (final s in _steps) {
-      total += s.count;
+    // If an aggregate record exists (e.g., from Health Connect daily total), use it as the base
+    final hasAggregate = _steps.any((s) => s.id.startsWith('hc_aggregate'));
+    if (hasAggregate) {
+      int aggregateMax = 0;
+      int liveIncrements = 0;
+      for (final s in _steps) {
+        if (s.id.startsWith('hc_aggregate')) {
+          if (s.count > aggregateMax) aggregateMax = s.count;
+        } else {
+          liveIncrements += s.count;
+        }
+      }
+      _todayTotalSteps = aggregateMax + liveIncrements;
+    } else {
+      int total = 0;
+      for (final s in _steps) {
+        total += s.count;
+      }
+      _todayTotalSteps = total;
     }
-    _todayTotalSteps = total;
   }
 
   void _updateHeartRateAge() {
@@ -138,7 +210,16 @@ class HealthDashboardProvider extends ChangeNotifier {
     final repo = repository;
     if (repo is HealthRepositoryImpl) {
       repo.setSimulationMode(enable);
-      notifyListeners();
+      if (!enable) {
+        // Immediately purge simulated records from local state
+        _heartRates.removeWhere((hr) => hr.id.startsWith('sim_'));
+        _latestHeartRate = _heartRates.isNotEmpty ? _heartRates.last : null;
+        _steps.removeWhere((s) => s.id.startsWith('sim_'));
+        _recalculateTotalSteps();
+        _updateHeartRateAge();
+        notifyListeners();
+      }
+      _loadHistoricalData();
     }
   }
 

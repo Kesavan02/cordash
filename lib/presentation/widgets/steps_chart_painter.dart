@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -50,11 +51,12 @@ class StepsChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
 
-    final width = size.width;
-    final height = size.height;
-    const paddingBottom = 28.0;
-    const paddingTop = 22.0;
-    final chartHeight = height - paddingBottom - paddingTop;
+    developer.Timeline.timeSync('StepsChartPainter.paint', () {
+      final width = size.width;
+      final height = size.height;
+      const paddingBottom = 28.0;
+      const paddingTop = 22.0;
+      final chartHeight = height - paddingBottom - paddingTop;
 
     // Draw horizontal gridlines
     _gridPaint.color = gridColor;
@@ -184,6 +186,7 @@ class StepsChartPainter extends CustomPainter {
       final labelY = height - paddingBottom + 6.0;
       _textPainter.paint(canvas, Offset(labelX, labelY));
     }
+    });
   }
 
   @override

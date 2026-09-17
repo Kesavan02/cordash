@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../domain/entities/heart_rate_record_entity.dart';
@@ -51,8 +52,9 @@ class HeartRateChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
 
-    final width = size.width;
-    final height = size.height;
+    developer.Timeline.timeSync('HeartRateChartPainter.paint', () {
+      final width = size.width;
+      final height = size.height;
     const paddingBottom = 24.0;
     const paddingTop = 16.0;
     final chartHeight = height - paddingBottom - paddingTop;
@@ -150,12 +152,17 @@ class HeartRateChartPainter extends CustomPainter {
       _linePaint.color = primaryColor;
       canvas.drawCircle(Offset(selX, selY), 7.0, _linePaint);
     }
+    });
   }
 
   @override
   bool shouldRepaint(covariant HeartRateChartPainter oldDelegate) {
-    return oldDelegate.records.length != records.length ||
-        oldDelegate.selectedNormalizedX != selectedNormalizedX ||
-        oldDelegate.primaryColor != primaryColor;
+    if (oldDelegate.records.length != records.length) return true;
+    if (oldDelegate.selectedNormalizedX != selectedNormalizedX) return true;
+    if (oldDelegate.primaryColor != primaryColor) return true;
+    if (records.isNotEmpty && oldDelegate.records.isNotEmpty) {
+      if (oldDelegate.records.last.bpm != records.last.bpm) return true;
+    }
+    return false;
   }
 }

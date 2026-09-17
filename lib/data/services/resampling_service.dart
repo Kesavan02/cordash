@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 import '../../domain/entities/heart_rate_record_entity.dart';
 
@@ -97,6 +98,7 @@ class ResamplingService {
   }
 
   /// Downsamples a list of [HeartRateRecordEntity] using LTTB, preserving timestamps and BPM.
+  /// Downsamples a list of [HeartRateRecordEntity] using LTTB, mapped by timestamp and BPM.
   static List<HeartRateRecordEntity> downsampleHeartRateRecords(
     List<HeartRateRecordEntity> records,
     int targetCount,
@@ -105,24 +107,26 @@ class ResamplingService {
       return records;
     }
 
-    final dataPoints = records
-        .map((r) => DataPoint(r.timestamp.millisecondsSinceEpoch.toDouble(), r.bpm.toDouble()))
-        .toList(growable: false);
+    return developer.Timeline.timeSync('LTTB.downsampleHeartRateRecords', () {
+      final dataPoints = records
+          .map((r) => DataPoint(r.timestamp.millisecondsSinceEpoch.toDouble(), r.bpm.toDouble()))
+          .toList(growable: false);
 
-    final decimated = downsampleLTTB(dataPoints, targetCount);
+      final decimated = downsampleLTTB(dataPoints, targetCount);
 
-    // Map back to HeartRateRecordEntity
-    final result = <HeartRateRecordEntity>[];
-    int cursor = 0;
-    for (final point in decimated) {
-      final targetMs = point.x.round();
-      // Find nearest original record matching timestamp and BPM
-      while (cursor < records.length - 1 &&
-          records[cursor].timestamp.millisecondsSinceEpoch < targetMs) {
-        cursor++;
+      // Map back to HeartRateRecordEntity
+      final result = <HeartRateRecordEntity>[];
+      int cursor = 0;
+      for (final point in decimated) {
+        final targetMs = point.x.round();
+        // Find nearest original record matching timestamp and BPM
+        while (cursor < records.length - 1 &&
+            records[cursor].timestamp.millisecondsSinceEpoch < targetMs) {
+          cursor++;
+        }
+        result.add(records[cursor]);
       }
-      result.add(records[cursor]);
-    }
-    return result;
+      return result;
+    });
   }
 }

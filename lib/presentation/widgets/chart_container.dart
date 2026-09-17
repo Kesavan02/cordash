@@ -26,6 +26,8 @@ class ChartContainer extends StatefulWidget {
 class _ChartContainerState extends State<ChartContainer> {
   double? _normalizedX;
   String? _tooltipText;
+  double _zoomScale = 1.0;
+  double _baseZoomScale = 1.0;
 
   void _onGestureUpdate(Offset localPosition, double width) {
     if (width <= 0) return;
@@ -36,6 +38,28 @@ class _ChartContainerState extends State<ChartContainer> {
         _tooltipText = widget.onTooltipQuery!(normalized);
       }
     });
+  }
+
+  void _onScaleStart(ScaleStartDetails details, double width) {
+    _baseZoomScale = _zoomScale;
+    if (details.pointerCount == 1) {
+      _onGestureUpdate(details.localFocalPoint, width);
+    }
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details, double width) {
+    if (details.pointerCount >= 2) {
+      setState(() {
+        _zoomScale = (_baseZoomScale * details.scale).clamp(1.0, 3.0);
+        _tooltipText = 'Zoom: ${_zoomScale.toStringAsFixed(1)}x';
+      });
+    } else {
+      _onGestureUpdate(details.localFocalPoint, width);
+    }
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    _onGestureEnd();
   }
 
   void _onGestureEnd() {
@@ -128,12 +152,9 @@ class _ChartContainerState extends State<ChartContainer> {
               final chartWidth = constraints.maxWidth;
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onHorizontalDragDown: (details) =>
-                    _onGestureUpdate(details.localPosition, chartWidth),
-                onHorizontalDragUpdate: (details) =>
-                    _onGestureUpdate(details.localPosition, chartWidth),
-                onHorizontalDragEnd: (_) => _onGestureEnd(),
-                onHorizontalDragCancel: () => _onGestureEnd(),
+                onScaleStart: (details) => _onScaleStart(details, chartWidth),
+                onScaleUpdate: (details) => _onScaleUpdate(details, chartWidth),
+                onScaleEnd: _onScaleEnd,
                 onTapDown: (details) =>
                     _onGestureUpdate(details.localPosition, chartWidth),
                 onTapUp: (_) => _onGestureEnd(),

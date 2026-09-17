@@ -215,7 +215,9 @@ class HealthDashboardProvider extends ChangeNotifier {
   }
 
   /// Toggles synthetic data simulation mode for development/testing.
+  /// Constraint: SimSource must be disabled in release builds.
   void toggleSimulation(bool enable) {
+    if (kReleaseMode) return;
     final repo = repository;
     if (repo is HealthRepositoryImpl) {
       repo.setSimulationMode(enable);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -52,77 +53,78 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           actions: [
-            // Simulation toggle / stop button
-            Consumer<HealthDashboardProvider>(
-              builder: (context, dashboard, _) {
-                final isSim = dashboard.isSimulating;
-                if (isSim) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 4,
-                    ),
-                    child: TextButton.icon(
-                      style: TextButton.styleFrom(
-                        backgroundColor: const Color(0x33FF2A6D),
-                        foregroundColor: const Color(0xFFFF2A6D),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(
-                            color: Color(0xFFFF2A6D),
-                            width: 1.2,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+            // Simulation toggle / stop button (debug & profile builds only)
+            if (!kReleaseMode)
+              Consumer<HealthDashboardProvider>(
+                builder: (context, dashboard, _) {
+                  final isSim = dashboard.isSimulating;
+                  if (isSim) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 4,
                       ),
-                      icon: const Icon(
-                        Icons.stop_rounded,
-                        size: 18,
-                        color: Color(0xFFFF2A6D),
-                      ),
-                      label: const Text(
-                        'STOP SIM',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      onPressed: () {
-                        dashboard.toggleSimulation(false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            duration: Duration(seconds: 2),
-                            content: Text(
-                              'SimSource stopped. Switched to Health Connect.',
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0x33FF2A6D),
+                          foregroundColor: const Color(0xFFFF2A6D),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(
+                              color: Color(0xFFFF2A6D),
+                              width: 1.2,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  );
-                }
-
-                return IconButton(
-                  tooltip: 'Start SimSource Live Demo',
-                  icon: const Icon(
-                    Icons.sensors_rounded,
-                    color: Colors.white54,
-                  ),
-                  onPressed: () {
-                    dashboard.toggleSimulation(true);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        duration: Duration(seconds: 2),
-                        content: Text(
-                          'SimSource synthetic data stream enabled',
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                         ),
+                        icon: const Icon(
+                          Icons.stop_rounded,
+                          size: 18,
+                          color: Color(0xFFFF2A6D),
+                        ),
+                        label: const Text(
+                          'STOP SIM',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        onPressed: () {
+                          dashboard.toggleSimulation(false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              duration: Duration(seconds: 2),
+                              content: Text(
+                                'SimSource stopped. Switched to Health Connect.',
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
-                  },
-                );
-              },
-            ),
+                  }
+
+                  return IconButton(
+                    tooltip: 'Start SimSource Live Demo',
+                    icon: const Icon(
+                      Icons.sensors_rounded,
+                      color: Colors.white54,
+                    ),
+                    onPressed: () {
+                      dashboard.toggleSimulation(true);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          duration: Duration(seconds: 2),
+                          content: Text(
+                            'SimSource synthetic data stream enabled',
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
 
             // Permissions screen action
             Consumer<PermissionProvider>(

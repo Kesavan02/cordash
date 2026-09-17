@@ -39,9 +39,36 @@ class HealthConnectDataSource {
     }
   }
 
+  /// Checks whether Health Connect is available on the device.
+  Future<bool> isHealthConnectInstalled() async {
+    try {
+      final status = await _health.getHealthConnectSdkStatus();
+      return status == HealthConnectSdkStatus.sdkAvailable;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Opens the Play Store to install or update Health Connect.
+  Future<void> installHealthConnect() async {
+    try {
+      await _health.installHealthConnect();
+    } catch (_) {}
+  }
+
   /// Checks Health Connect authorization status for Steps and Heart Rate.
   Future<PermissionStatusEntity> checkPermissions() async {
     try {
+      final bool isAvailable = await isHealthConnectInstalled();
+      if (!isAvailable) {
+        return const PermissionStatusEntity(
+          stepsGranted: false,
+          heartRateGranted: false,
+          canRequestAgain: true,
+          isHealthConnectAvailable: false,
+        );
+      }
+
       final bool? stepsGranted = await _health.hasPermissions([HealthDataType.STEPS]);
       final bool? hrGranted = await _health.hasPermissions([HealthDataType.HEART_RATE]);
 
@@ -49,12 +76,14 @@ class HealthConnectDataSource {
         stepsGranted: stepsGranted ?? false,
         heartRateGranted: hrGranted ?? false,
         canRequestAgain: true,
+        isHealthConnectAvailable: true,
       );
     } catch (_) {
       return const PermissionStatusEntity(
         stepsGranted: false,
         heartRateGranted: false,
         canRequestAgain: true,
+        isHealthConnectAvailable: false,
       );
     }
   }
@@ -62,17 +91,27 @@ class HealthConnectDataSource {
   /// Launches the Health Connect permission request sheet.
   Future<PermissionStatusEntity> requestPermissions() async {
     try {
-      final bool authorized = await _health.requestAuthorization(_dataTypes);
+      final bool isAvailable = await isHealthConnectInstalled();
+      if (!isAvailable) {
+        await installHealthConnect();
+        return const PermissionStatusEntity(
+          stepsGranted: false,
+          heartRateGranted: false,
+          canRequestAgain: true,
+          isHealthConnectAvailable: false,
+        );
+      }
+
+      final bool authorized = await _health.requestAuthorization(
+        _dataTypes,
+        permissions: const [HealthDataAccess.READ, HealthDataAccess.READ],
+      );
       if (authorized) {
         startPolling();
       }
       return await checkPermissions();
     } catch (_) {
-      return const PermissionStatusEntity(
-        stepsGranted: false,
-        heartRateGranted: false,
-        canRequestAgain: true,
-      );
+      return await checkPermissions();
     }
   }
 

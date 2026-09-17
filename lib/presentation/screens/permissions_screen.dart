@@ -53,7 +53,8 @@ class PermissionsScreen extends StatelessWidget {
                 _buildPermissionTile(
                   icon: Icons.directions_walk_rounded,
                   name: 'Steps Records',
-                  description: 'Access to step counter data and daily activity totals.',
+                  description:
+                      'Access to step counter data and daily activity totals.',
                   isGranted: perm.stepsGranted,
                   color: const Color(0xFF00E5FF),
                 ),
@@ -63,7 +64,8 @@ class PermissionsScreen extends StatelessWidget {
                 _buildPermissionTile(
                   icon: Icons.favorite_rounded,
                   name: 'Heart Rate Records',
-                  description: 'Access to sensor heart rate intervals and BPM trends.',
+                  description:
+                      'Access to sensor heart rate intervals and BPM trends.',
                   isGranted: perm.heartRateGranted,
                   color: const Color(0xFFFF2A6D),
                 ),
@@ -129,8 +131,8 @@ class PermissionsScreen extends StatelessWidget {
                       backgroundColor: perm.allGranted
                           ? const Color(0xFF00E676)
                           : !perm.isHealthConnectAvailable
-                              ? const Color(0xFFFF9100)
-                              : const Color(0xFF00E5FF),
+                          ? const Color(0xFFFF9100)
+                          : const Color(0xFF00E5FF),
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -148,8 +150,8 @@ class PermissionsScreen extends StatelessWidget {
                                     success
                                         ? 'All permissions successfully granted!'
                                         : !perm.isHealthConnectAvailable
-                                            ? 'Opening Google Play Store to install Health Connect...'
-                                            : 'Some permissions were not granted in Health Connect.',
+                                        ? 'Opening Google Play Store to install Health Connect...'
+                                        : 'Some permissions were not granted in Health Connect.',
                                   ),
                                 ),
                               );
@@ -168,8 +170,8 @@ class PermissionsScreen extends StatelessWidget {
                             perm.allGranted
                                 ? 'PERMISSIONS GRANTED'
                                 : !perm.isHealthConnectAvailable
-                                    ? 'INSTALL HEALTH CONNECT (PLAY STORE)'
-                                    : 'GRANT PERMISSIONS',
+                                ? 'INSTALL HEALTH CONNECT (PLAY STORE)'
+                                : 'GRANT PERMISSIONS',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -191,7 +193,9 @@ class PermissionsScreen extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF00E5FF),
                           side: BorderSide(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
+                            color: const Color(
+                              0xFF00E5FF,
+                            ).withValues(alpha: 0.5),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -278,8 +282,12 @@ class PermissionsScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      isGranted ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                      color: isGranted ? const Color(0xFF00E676) : Colors.white38,
+                      isGranted
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      color: isGranted
+                          ? const Color(0xFF00E676)
+                          : Colors.white38,
                       size: 20,
                     ),
                   ],

@@ -24,7 +24,8 @@ class PermissionStatusEntity {
       stepsGranted: stepsGranted ?? this.stepsGranted,
       heartRateGranted: heartRateGranted ?? this.heartRateGranted,
       canRequestAgain: canRequestAgain ?? this.canRequestAgain,
-      isHealthConnectAvailable: isHealthConnectAvailable ?? this.isHealthConnectAvailable,
+      isHealthConnectAvailable:
+          isHealthConnectAvailable ?? this.isHealthConnectAvailable,
     );
   }
 
@@ -40,9 +41,9 @@ class PermissionStatusEntity {
 
   @override
   int get hashCode => Object.hash(
-        stepsGranted,
-        heartRateGranted,
-        canRequestAgain,
-        isHealthConnectAvailable,
-      );
+    stepsGranted,
+    heartRateGranted,
+    canRequestAgain,
+    isHealthConnectAvailable,
+  );
 }

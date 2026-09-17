@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cordash/presentation/widgets/header_cards.dart';
 
 void main() {
-  testWidgets('HeaderCards displays steps and heart rate accurately',
-      (WidgetTester tester) async {
+  testWidgets('HeaderCards displays steps and heart rate accurately', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(

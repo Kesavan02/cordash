@@ -81,7 +81,9 @@ class _HeaderCardsState extends State<HeaderCards>
           Expanded(
             child: _buildMetricCard(
               title: 'HEART RATE',
-              value: widget.latestBpm != null ? '${widget.latestBpm} BPM' : '--',
+              value: widget.latestBpm != null
+                  ? '${widget.latestBpm} BPM'
+                  : '--',
               subtitle: widget.heartRateAge,
               icon: Icons.favorite_rounded,
               accentColor: const Color(0xFFFF2A6D),
@@ -145,12 +147,7 @@ class _HeaderCardsState extends State<HeaderCards>
                   letterSpacing: 1.0,
                 ),
               ),
-              iconWidget ??
-                  Icon(
-                    icon,
-                    color: accentColor,
-                    size: 22,
-                  ),
+              iconWidget ?? Icon(icon, color: accentColor, size: 22),
             ],
           ),
           const SizedBox(height: 10),
@@ -172,10 +169,7 @@ class _HeaderCardsState extends State<HeaderCards>
               fontWeight: FontWeight.w500,
             ),
           ),
-          if (extraWidget != null) ...[
-            const SizedBox(height: 8),
-            extraWidget,
-          ],
+          if (extraWidget != null) ...[const SizedBox(height: 8), extraWidget],
         ],
       ),
     );

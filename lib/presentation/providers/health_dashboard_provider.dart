@@ -51,7 +51,11 @@ class HealthDashboardProvider extends ChangeNotifier {
     // Group existing step records by calendar day
     final Map<int, int> dayStepsMap = {};
     for (final s in _steps) {
-      final sDate = DateTime(s.startTime.year, s.startTime.month, s.startTime.day);
+      final sDate = DateTime(
+        s.startTime.year,
+        s.startTime.month,
+        s.startTime.day,
+      );
       final daysAgo = todayMidnight.difference(sDate).inDays;
       if (daysAgo >= 0 && daysAgo < 7) {
         dayStepsMap[daysAgo] = (dayStepsMap[daysAgo] ?? 0) + s.count;
@@ -75,12 +79,17 @@ class HealthDashboardProvider extends ChangeNotifier {
           id: 'weekly_day_$i',
           count: count,
           startTime: dayDate,
-          endTime: i == 0 ? now : dayDate.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
+          endTime: i == 0
+              ? now
+              : dayDate.add(
+                  const Duration(hours: 23, minutes: 59, seconds: 59),
+                ),
         ),
       );
     }
     return List.unmodifiable(result);
   }
+
   bool get isSimulating {
     final repo = repository;
     if (repo is HealthRepositoryImpl) {

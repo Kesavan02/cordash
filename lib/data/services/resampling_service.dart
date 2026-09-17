@@ -77,9 +77,10 @@ class ResamplingService {
       for (int j = rangeBStart; j < rangeBEnd; j++) {
         // Area of triangle between A, B, and average C:
         // Area = 0.5 * | (x_a - x_c)(y_b - y_a) - (x_a - x_b)(y_c - y_a) |
-        final area = ((pointAX - avgX) * (data[j].y - pointAY) -
-                (pointAX - data[j].x) * (avgY - pointAY))
-            .abs();
+        final area =
+            ((pointAX - avgX) * (data[j].y - pointAY) -
+                    (pointAX - data[j].x) * (avgY - pointAY))
+                .abs();
 
         if (area > maxArea) {
           maxArea = area;
@@ -109,7 +110,12 @@ class ResamplingService {
 
     return developer.Timeline.timeSync('LTTB.downsampleHeartRateRecords', () {
       final dataPoints = records
-          .map((r) => DataPoint(r.timestamp.millisecondsSinceEpoch.toDouble(), r.bpm.toDouble()))
+          .map(
+            (r) => DataPoint(
+              r.timestamp.millisecondsSinceEpoch.toDouble(),
+              r.bpm.toDouble(),
+            ),
+          )
           .toList(growable: false);
 
       final decimated = downsampleLTTB(dataPoints, targetCount);

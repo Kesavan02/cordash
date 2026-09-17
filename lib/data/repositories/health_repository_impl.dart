@@ -20,8 +20,8 @@ class HealthRepositoryImpl implements HealthRepository {
   HealthRepositoryImpl({
     HealthConnectDataSource? dataSource,
     DeduplicationService? dedupService,
-  })  : _dataSource = dataSource ?? HealthConnectDataSource(),
-        _dedupService = dedupService ?? DeduplicationService() {
+  }) : _dataSource = dataSource ?? HealthConnectDataSource(),
+       _dedupService = dedupService ?? DeduplicationService() {
     _initStreamPipes();
   }
 

@@ -41,7 +41,9 @@ void main() {
   final getStepsStreamUseCase = GetStepsStreamUseCase(healthRepository);
   final getHeartRateStreamUseCase = GetHeartRateStreamUseCase(healthRepository);
   final checkPermissionsUseCase = CheckPermissionsUseCase(permissionRepository);
-  final requestPermissionsUseCase = RequestPermissionsUseCase(permissionRepository);
+  final requestPermissionsUseCase = RequestPermissionsUseCase(
+    permissionRepository,
+  );
 
   runApp(
     MultiProvider(
@@ -59,9 +61,7 @@ void main() {
             requestPermissions: requestPermissionsUseCase,
           ),
         ),
-        ChangeNotifierProvider(
-          create: (_) => PerformanceHudProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => PerformanceHudProvider()),
       ],
       child: const CorDashApp(),
     ),

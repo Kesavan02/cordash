@@ -32,7 +32,9 @@ void main() {
           await tester.tap(startSimFinder);
           await tester.pump();
         } else {
-          final bannerButtonFinder = find.text('START LIVE DEMO STREAM (SIMSOURCE)');
+          final bannerButtonFinder = find.text(
+            'START LIVE DEMO STREAM (SIMSOURCE)',
+          );
           if (bannerButtonFinder.evaluate().isNotEmpty) {
             await tester.tap(bannerButtonFinder);
             await tester.pump();

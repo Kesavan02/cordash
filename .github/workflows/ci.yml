@@ -44,5 +44,8 @@ jobs:
       - name: Execute Automated Unit & Golden Tests
         run: flutter test --coverage
 
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build Debug Android APK
         run: flutter build apk --debug

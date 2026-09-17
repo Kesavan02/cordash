@@ -12,7 +12,9 @@ void main() {
 
       expect(
         computed,
-        equals('53e4cf58eb6634c6149e062b2110da8712b6f9d1403a1d7b735589004348d5c7'),
+        equals(
+          '53e4cf58eb6634c6149e062b2110da8712b6f9d1403a1d7b735589004348d5c7',
+        ),
       );
     });
 
@@ -20,7 +22,9 @@ void main() {
       expect(SaltVerifier.verifyEmbeddedSalt(), isTrue);
       expect(
         AppConstants.antiPlagiarismSalt,
-        equals('53e4cf58eb6634c6149e062b2110da8712b6f9d1403a1d7b735589004348d5c7'),
+        equals(
+          '53e4cf58eb6634c6149e062b2110da8712b6f9d1403a1d7b735589004348d5c7',
+        ),
       );
     });
   });

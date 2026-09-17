@@ -60,7 +60,10 @@ void main() {
       expect(service.isBurst(t0.add(const Duration(milliseconds: 50))), isTrue);
 
       // Event 300ms later is outside threshold -> not burst
-      expect(service.isBurst(t0.add(const Duration(milliseconds: 300))), isFalse);
+      expect(
+        service.isBurst(t0.add(const Duration(milliseconds: 300))),
+        isFalse,
+      );
     });
 
     test('clear() resets cached IDs', () {

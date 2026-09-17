@@ -7,7 +7,7 @@ class PermissionRepositoryImpl implements PermissionRepository {
   final HealthConnectDataSource _dataSource;
 
   PermissionRepositoryImpl({HealthConnectDataSource? dataSource})
-      : _dataSource = dataSource ?? HealthConnectDataSource();
+    : _dataSource = dataSource ?? HealthConnectDataSource();
 
   @override
   Future<PermissionStatusEntity> checkStatus() {

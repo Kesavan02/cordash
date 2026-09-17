@@ -7,10 +7,7 @@ import '../providers/performance_hud_provider.dart';
 class PerformanceHudOverlay extends StatefulWidget {
   final Widget child;
 
-  const PerformanceHudOverlay({
-    super.key,
-    required this.child,
-  });
+  const PerformanceHudOverlay({super.key, required this.child});
 
   @override
   State<PerformanceHudOverlay> createState() => _PerformanceHudOverlayState();
@@ -86,13 +83,15 @@ class _PerformanceHudOverlayState extends State<PerformanceHudOverlay> {
                               const SizedBox(width: 8),
                               _metricColumn(
                                 label: 'BUILD',
-                                value: '${hud.avgBuildTimeMs.toStringAsFixed(1)}ms',
+                                value:
+                                    '${hud.avgBuildTimeMs.toStringAsFixed(1)}ms',
                                 color: statusColor,
                               ),
                               _divider(),
                               _metricColumn(
                                 label: 'PAINT',
-                                value: '${hud.avgRasterTimeMs.toStringAsFixed(1)}ms',
+                                value:
+                                    '${hud.avgRasterTimeMs.toStringAsFixed(1)}ms',
                                 color: Colors.white70,
                               ),
                               _divider(),

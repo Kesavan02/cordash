@@ -16,7 +16,8 @@ class HealthConnectDataSource {
   ];
 
   final _stepStreamController = StreamController<StepRecordEntity>.broadcast();
-  final _hrStreamController = StreamController<HeartRateRecordEntity>.broadcast();
+  final _hrStreamController =
+      StreamController<HeartRateRecordEntity>.broadcast();
 
   Timer? _pollingTimer;
   Timer? _simTimer;
@@ -25,7 +26,8 @@ class HealthConnectDataSource {
   final math.Random _random = math.Random();
 
   Stream<StepRecordEntity> get stepsStream => _stepStreamController.stream;
-  Stream<HeartRateRecordEntity> get heartRateStream => _hrStreamController.stream;
+  Stream<HeartRateRecordEntity> get heartRateStream =>
+      _hrStreamController.stream;
   int get simulatedStepTotal => _simStepAccumulator;
 
   HealthConnectDataSource() {
@@ -70,8 +72,12 @@ class HealthConnectDataSource {
         );
       }
 
-      final bool? stepsGranted = await _health.hasPermissions([HealthDataType.STEPS]);
-      final bool? hrGranted = await _health.hasPermissions([HealthDataType.HEART_RATE]);
+      final bool? stepsGranted = await _health.hasPermissions([
+        HealthDataType.STEPS,
+      ]);
+      final bool? hrGranted = await _health.hasPermissions([
+        HealthDataType.HEART_RATE,
+      ]);
 
       final allGranted = (stepsGranted ?? false) && (hrGranted ?? false);
       if (allGranted && _pollingTimer == null && !_isSimulating) {
@@ -172,7 +178,10 @@ class HealthConnectDataSource {
 
       if (records.isEmpty) {
         try {
-          final totalSteps = await _health.getTotalStepsInInterval(startOfDay, now);
+          final totalSteps = await _health.getTotalStepsInInterval(
+            startOfDay,
+            now,
+          );
           if (totalSteps != null && totalSteps > 0) {
             records.add(
               StepRecordEntity(
@@ -249,7 +258,9 @@ class HealthConnectDataSource {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(interval, (_) async {
       try {
-        final recentHr = await fetchRecentHeartRates(duration: const Duration(minutes: 2));
+        final recentHr = await fetchRecentHeartRates(
+          duration: const Duration(minutes: 2),
+        );
         if (recentHr.isNotEmpty && !_hrStreamController.isClosed) {
           _hrStreamController.add(recentHr.last);
         }

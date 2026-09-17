@@ -60,15 +60,16 @@ void main() {
         final time = now.add(Duration(seconds: i * 5));
         // Spike at index 250
         final bpm = i == 250 ? 180 : 70 + (i % 10);
-        records.add(HeartRateRecordEntity(
-          id: 'hr_$i',
-          bpm: bpm,
-          timestamp: time,
-        ));
+        records.add(
+          HeartRateRecordEntity(id: 'hr_$i', bpm: bpm, timestamp: time),
+        );
       }
 
       const target = 50;
-      final downsampled = ResamplingService.downsampleHeartRateRecords(records, target);
+      final downsampled = ResamplingService.downsampleHeartRateRecords(
+        records,
+        target,
+      );
 
       expect(downsampled.length, equals(target));
       expect(downsampled.first.id, equals('hr_0'));

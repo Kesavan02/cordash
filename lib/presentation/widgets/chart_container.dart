@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 class ChartContainer extends StatefulWidget {
   final String title;
   final String subtitle;
-  final Widget Function(BuildContext context, double? selectedNormalizedX) painterBuilder;
+  final Widget Function(BuildContext context, double? selectedNormalizedX)
+  painterBuilder;
   final String? Function(double normalizedX)? onTooltipQuery;
   final Widget? trailing;
 

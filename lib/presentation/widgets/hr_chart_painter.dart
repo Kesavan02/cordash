@@ -55,103 +55,126 @@ class HeartRateChartPainter extends CustomPainter {
     developer.Timeline.timeSync('HeartRateChartPainter.paint', () {
       final width = size.width;
       final height = size.height;
-    const paddingBottom = 24.0;
-    const paddingTop = 16.0;
-    final chartHeight = height - paddingBottom - paddingTop;
+      const paddingBottom = 24.0;
+      const paddingTop = 16.0;
+      final chartHeight = height - paddingBottom - paddingTop;
 
-    // Draw background grid lines
-    _gridPaint.color = gridColor;
-    const gridDivisions = 3;
-    for (int i = 0; i <= gridDivisions; i++) {
-      final y = paddingTop + (chartHeight / gridDivisions) * i;
-      canvas.drawLine(Offset(0, y), Offset(width, y), _gridPaint);
-    }
+      // Draw background grid lines
+      _gridPaint.color = gridColor;
+      const gridDivisions = 3;
+      for (int i = 0; i <= gridDivisions; i++) {
+        final y = paddingTop + (chartHeight / gridDivisions) * i;
+        canvas.drawLine(Offset(0, y), Offset(width, y), _gridPaint);
+      }
 
-    if (records.length < 2) return;
+      if (records.length < 2) return;
 
-    // Determine min/max BPM (with safe margins: 50 to 140 min range)
-    int minBpm = 200;
-    int maxBpm = 40;
-    for (final r in records) {
-      if (r.bpm < minBpm) minBpm = r.bpm;
-      if (r.bpm > maxBpm) maxBpm = r.bpm;
-    }
-    // Pad margins
-    minBpm = (minBpm - 5).clamp(40, 180);
-    maxBpm = (maxBpm + 10).clamp(minBpm + 20, 220);
-    final bpmRange = (maxBpm - minBpm).toDouble();
+      // Determine min/max BPM (with safe margins: 50 to 140 min range)
+      int minBpm = 200;
+      int maxBpm = 40;
+      for (final r in records) {
+        if (r.bpm < minBpm) minBpm = r.bpm;
+        if (r.bpm > maxBpm) maxBpm = r.bpm;
+      }
+      // Pad margins
+      minBpm = (minBpm - 5).clamp(40, 180);
+      maxBpm = (maxBpm + 10).clamp(minBpm + 20, 220);
+      final bpmRange = (maxBpm - minBpm).toDouble();
 
-    // Clear paths for reuse
-    _linePath.reset();
-    _fillPath.reset();
+      // Clear paths for reuse
+      _linePath.reset();
+      _fillPath.reset();
 
-    final pointCount = records.length;
-    final dx = width / (pointCount - 1);
+      final pointCount = records.length;
+      final dx = width / (pointCount - 1);
 
-    // First point coordinates
-    final firstY = height - paddingBottom - ((records[0].bpm - minBpm) / bpmRange) * chartHeight;
-    _linePath.moveTo(0, firstY);
-    _fillPath.moveTo(0, height - paddingBottom);
-    _fillPath.lineTo(0, firstY);
+      // First point coordinates
+      final firstY =
+          height -
+          paddingBottom -
+          ((records[0].bpm - minBpm) / bpmRange) * chartHeight;
+      _linePath.moveTo(0, firstY);
+      _fillPath.moveTo(0, height - paddingBottom);
+      _fillPath.lineTo(0, firstY);
 
-    double prevX = 0;
-    double prevY = firstY;
+      double prevX = 0;
+      double prevY = firstY;
 
-    for (int i = 1; i < pointCount; i++) {
-      final curX = i * dx;
-      final curY = height - paddingBottom - ((records[i].bpm - minBpm) / bpmRange) * chartHeight;
+      for (int i = 1; i < pointCount; i++) {
+        final curX = i * dx;
+        final curY =
+            height -
+            paddingBottom -
+            ((records[i].bpm - minBpm) / bpmRange) * chartHeight;
 
-      // Cubic Bezier smoothing
-      final controlX1 = prevX + (curX - prevX) / 2;
-      final controlY1 = prevY;
-      final controlX2 = prevX + (curX - prevX) / 2;
-      final controlY2 = curY;
+        // Cubic Bezier smoothing
+        final controlX1 = prevX + (curX - prevX) / 2;
+        final controlY1 = prevY;
+        final controlX2 = prevX + (curX - prevX) / 2;
+        final controlY2 = curY;
 
-      _linePath.cubicTo(controlX1, controlY1, controlX2, controlY2, curX, curY);
-      _fillPath.cubicTo(controlX1, controlY1, controlX2, controlY2, curX, curY);
+        _linePath.cubicTo(
+          controlX1,
+          controlY1,
+          controlX2,
+          controlY2,
+          curX,
+          curY,
+        );
+        _fillPath.cubicTo(
+          controlX1,
+          controlY1,
+          controlX2,
+          controlY2,
+          curX,
+          curY,
+        );
 
-      prevX = curX;
-      prevY = curY;
-    }
+        prevX = curX;
+        prevY = curY;
+      }
 
-    // Complete fill path down to baseline
-    _fillPath.lineTo(width, height - paddingBottom);
-    _fillPath.close();
+      // Complete fill path down to baseline
+      _fillPath.lineTo(width, height - paddingBottom);
+      _fillPath.close();
 
-    // Shader fill with gradient
-    _fillPaint.shader = ui.Gradient.linear(
-      Offset(0, paddingTop),
-      Offset(0, height - paddingBottom),
-      [
-        primaryColor.withValues(alpha: 0.35),
-        primaryColor.withValues(alpha: 0.0),
-      ],
-    );
-    canvas.drawPath(_fillPath, _fillPaint);
-
-    // Draw line curve
-    _linePaint.color = primaryColor;
-    canvas.drawPath(_linePath, _linePaint);
-
-    // Draw selection indicator if active
-    if (selectedNormalizedX != null) {
-      final clampedNorm = selectedNormalizedX!.clamp(0.0, 1.0);
-      final selIndex = (clampedNorm * (pointCount - 1)).round();
-      final selX = selIndex * dx;
-      final selY = height - paddingBottom - ((records[selIndex].bpm - minBpm) / bpmRange) * chartHeight;
-
-      // Vertical crosshair
-      canvas.drawLine(
-        Offset(selX, paddingTop),
-        Offset(selX, height - paddingBottom),
-        _crosshairPaint,
+      // Shader fill with gradient
+      _fillPaint.shader = ui.Gradient.linear(
+        Offset(0, paddingTop),
+        Offset(0, height - paddingBottom),
+        [
+          primaryColor.withValues(alpha: 0.35),
+          primaryColor.withValues(alpha: 0.0),
+        ],
       );
+      canvas.drawPath(_fillPath, _fillPaint);
 
-      // Highlight dot
-      canvas.drawCircle(Offset(selX, selY), 5.0, _dotPaint);
+      // Draw line curve
       _linePaint.color = primaryColor;
-      canvas.drawCircle(Offset(selX, selY), 7.0, _linePaint);
-    }
+      canvas.drawPath(_linePath, _linePaint);
+
+      // Draw selection indicator if active
+      if (selectedNormalizedX != null) {
+        final clampedNorm = selectedNormalizedX!.clamp(0.0, 1.0);
+        final selIndex = (clampedNorm * (pointCount - 1)).round();
+        final selX = selIndex * dx;
+        final selY =
+            height -
+            paddingBottom -
+            ((records[selIndex].bpm - minBpm) / bpmRange) * chartHeight;
+
+        // Vertical crosshair
+        canvas.drawLine(
+          Offset(selX, paddingTop),
+          Offset(selX, height - paddingBottom),
+          _crosshairPaint,
+        );
+
+        // Highlight dot
+        canvas.drawCircle(Offset(selX, selY), 5.0, _dotPaint);
+        _linePaint.color = primaryColor;
+        canvas.drawCircle(Offset(selX, selY), 7.0, _linePaint);
+      }
     });
   }
 

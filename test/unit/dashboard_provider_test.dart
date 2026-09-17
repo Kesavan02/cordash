@@ -19,24 +19,24 @@ class MockHealthRepository implements HealthRepository {
 
   @override
   Future<List<StepRecordEntity>> fetchTodaySteps() async => [
-        StepRecordEntity(
-          id: 'step_initial',
-          count: 1200,
-          startTime: DateTime.now().subtract(const Duration(hours: 2)),
-          endTime: DateTime.now().subtract(const Duration(hours: 1)),
-        ),
-      ];
+    StepRecordEntity(
+      id: 'step_initial',
+      count: 1200,
+      startTime: DateTime.now().subtract(const Duration(hours: 2)),
+      endTime: DateTime.now().subtract(const Duration(hours: 1)),
+    ),
+  ];
 
   @override
   Future<List<HeartRateRecordEntity>> fetchRecentHeartRates({
     Duration duration = const Duration(hours: 1),
   }) async => [
-        HeartRateRecordEntity(
-          id: 'hr_initial',
-          bpm: 72,
-          timestamp: DateTime.now().subtract(const Duration(seconds: 10)),
-        ),
-      ];
+    HeartRateRecordEntity(
+      id: 'hr_initial',
+      bpm: 72,
+      timestamp: DateTime.now().subtract(const Duration(seconds: 10)),
+    ),
+  ];
 
   void emitStep(StepRecordEntity step) => _stepController.add(step);
   void emitHeartRate(HeartRateRecordEntity hr) => _hrController.add(hr);
@@ -101,11 +101,7 @@ void main() {
     test('Updates latest heart rate on live HR emission', () async {
       final now = DateTime.now();
       repo.emitHeartRate(
-        HeartRateRecordEntity(
-          id: 'hr_live_1',
-          bpm: 88,
-          timestamp: now,
-        ),
+        HeartRateRecordEntity(id: 'hr_live_1', bpm: 88, timestamp: now),
       );
 
       await Future<void>.delayed(const Duration(milliseconds: 20));
